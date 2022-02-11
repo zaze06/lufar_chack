@@ -7,9 +7,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.*;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.Socket;
 import java.util.ArrayList;
 
@@ -47,7 +44,7 @@ public class Client extends JPanel implements MouseListener, ActionListener {
 
     InputDataThread inputDataThread;
 
-    static Tile[][] map = new Tile[20][20];
+    static Tile[][] map = new Tile[60][60];
 
     public Client(String hostname){
         frame = new JFrame();
@@ -135,7 +132,7 @@ public class Client extends JPanel implements MouseListener, ActionListener {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        out.println(new DataPacket(Type.CLICK, new JSONObject().put("x", e.getX()).put("y", e.getY()), ""));
+        out.println(new DataPacket(Type.CLICK, new JSONObject().put("x", e.getX()).put("y", e.getY()), "").toJSON());
     }
 
     @Override
@@ -176,14 +173,14 @@ public class Client extends JPanel implements MouseListener, ActionListener {
                     //dataIn.add(tmp);
 
                     if(tmp.getKey() == Type.TILE){
-                        Pair<Vector2I, Tile> pair1 = Tile.fromTile(tmp.getValue());
+                        Pair<Vector2I, Tile> pair1 = Tile.fromJSON(tmp.getValue());
                         int x = pair1.getKey().getX(), y = pair1.getKey().getY();
                         map[x][y] = pair1.getValue();
                         //dataIn.remove(pair);
                     }else if(tmp.getKey() == Type.MAP){
                         JSONObject tiles = tmp.getValue();
                         for(String name : tiles.keySet()){
-                            Pair<Vector2I, Tile> pair1 = Tile.fromTile(tiles.getJSONObject(name));
+                            Pair<Vector2I, Tile> pair1 = Tile.fromJSON(tiles.getJSONObject(name).getJSONObject("value"));
                             int x = pair1.getKey().getX(), y = pair1.getKey().getY();
                             map[x][y] = pair1.getValue();
                         }

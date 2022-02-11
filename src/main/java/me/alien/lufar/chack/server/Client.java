@@ -36,6 +36,7 @@ public class Client {
             while (true){
                 try {
                     String data = in.readLine();
+                    System.out.println(data);
                     JSONObject obj = new JSONObject(data);
                     server.dataIn.add(new Pair<>(id, new Pair<>(obj.getEnum(Type.class, "type"), obj.getJSONObject("data"))));
                     synchronized (server.dataIn) {

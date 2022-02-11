@@ -53,6 +53,15 @@ public class Server {
         clientAsceptThread = new ClientAsceptThread();
         clientAsceptThread.start();
 
+        dataHandler = new DataHandler();
+        dataHandler.start();
+
+        for(int x = 0; x < 20; x++){
+            for(int y = 0; y < 20; y++){
+                map[x][y] = new Tile();
+            }
+        }
+
     }
 
     class ClientAsceptThread extends Thread{
@@ -88,13 +97,18 @@ public class Server {
                     }
                     out.println(new DataPacket(Type.SUCCES, new JSONObject().put("info", "Ready to play"), "").toJSON());
                     //out.println(new DataPacket(Type.TILE, new Tile().place(id).toJSON(0,id), "").toJSON());
+
                     JSONObject map = new JSONObject();
                     for(int x = 0; x < 20; x++){
                         for(int y = 0; y < 20; y++){
-                            map.put(x+":"+y, new Pair<>(new Vector2I(x,y), Server.map[x][y]));
+                            final JSONObject value = new Pair<>(new Vector2I(x, y).toJSON(), Server.map[x][y].toJSON(x, y)).toJSON(x, y);
+                            map.put(x+":"+y, value);
                         }
                     }
-                    out.println(new DataPacket(Type.MAP, map, "").toJSON());
+                    System.out.println(map);
+                    final JSONObject mapJson = new DataPacket(Type.MAP, map, "").toJSON();
+                    System.out.println(mapJson);
+                    out.println(mapJson);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -122,9 +136,15 @@ public class Server {
                 if(data.getKey() == Type.CLICK){
                     if(turn == id) {
                         final JSONObject tile = data.getValue();
-                        int x = tile.getInt("x");
-                        int y = tile.getInt("y");
+                        int x = tile.getInt("x")/10;
+                        int y = tile.getInt("y")/10;
                         map[x][y].place(id);
+                        if(player1 != null){
+                            player1.out.println(new DataPacket(Type.TILE, map[x][y].toJSON(x,y), "").toJSON());
+                        }
+                        if(player2 != null){
+                            player2.out.println(new DataPacket(Type.TILE, map[x][y].toJSON(x,y), "").toJSON());
+                        }
                         turn = (turn==1?2:1);
                     }
                 }

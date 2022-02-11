@@ -1,5 +1,9 @@
 package me.alien.lufar.chack.util;
 
+import org.json.JSONObject;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Objects;
 
 public class Pair<K, V> {
@@ -39,6 +43,57 @@ public class Pair<K, V> {
                 ", \"key\": " + key.toString() +
                 ", \"value\": " + value.toString() +
                 '}';
+    }
+
+
+    /**
+     *
+     * @param x x paremeter for if the key or value has an toJSON meathos that requirirs that
+     * @param y y paremeter for if the key or value has an toJSON meathos that requirirs that
+     * @return the Pair as a JSONObject
+     */
+    public JSONObject toJSON(int x, int y){
+        Method[] keyMethods = key.getClass().getDeclaredMethods();
+        Object keyData = key.toString();
+        for(Method m : keyMethods){
+            if(m.getName().equals("toJSON")){
+                try {
+                    keyData = m.invoke(null);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                } catch (InvocationTargetException e) {
+                    try{
+                        keyData = m.invoke(null, x,y);
+                    } catch (InvocationTargetException ex) {
+                        ex.printStackTrace();
+                    } catch (IllegalAccessException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        }
+
+        Method[] valueMethods = key.getClass().getDeclaredMethods();
+        Object valueData = key.toString();
+        for(Method m : valueMethods){
+            if(m.getName().equals("toJSON")){
+                try {
+                    valueData = m.invoke(null);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                } catch (InvocationTargetException e) {
+                    try{
+                        valueData = m.invoke(null, x,y);
+                    } catch (InvocationTargetException ex) {
+                        ex.printStackTrace();
+                    } catch (IllegalAccessException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        }
+
+        return new JSONObject().put("key", key).put("value", value);
     }
 
     @Override

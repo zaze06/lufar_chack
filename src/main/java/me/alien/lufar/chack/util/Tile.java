@@ -54,7 +54,7 @@ public class Tile {
         return obj;
     }
 
-    public static Pair<Vector2I, Tile> fromTile(JSONObject data){
+    public static Pair<Vector2I, Tile> fromJSON(JSONObject data){
         Tile tile = new Tile();
         if(data.getBoolean("placed")){
             tile.place(data.getInt("id"));
