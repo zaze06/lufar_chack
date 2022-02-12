@@ -69,12 +69,15 @@ public class Pair<K, V> {
                     } catch (IllegalAccessException ex) {
                         ex.printStackTrace();
                     }
+                } catch(NullPointerException e) {
+                    //Hantera detta på rätt sätt
+                    System.out.println("Breakpoint");
                 }
             }
         }
 
-        Method[] valueMethods = key.getClass().getDeclaredMethods();
-        Object valueData = key.toString();
+        Method[] valueMethods = value.getClass().getDeclaredMethods();
+        Object valueData = value.toString();
         for(Method m : valueMethods){
             if(m.getName().equals("toJSON")){
                 try {

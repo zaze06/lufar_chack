@@ -2,10 +2,7 @@ package me.alien.lufar.chack.client;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.*;
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -18,7 +15,7 @@ import org.json.JSONObject;
 
 import static me.alien.lufar.chack.Main.VERSION;
 
-public class Client extends JPanel implements MouseListener, ActionListener {
+public class Client extends JPanel implements MouseListener, ActionListener, KeyListener {
     public static void main(ArrayList<String> args) {
         String hostname = "localhost";
         if(args.contains("-ip")){
@@ -32,6 +29,7 @@ public class Client extends JPanel implements MouseListener, ActionListener {
     }
 
     static ArrayList<Pair<Type, JSONObject>> dataIn = new ArrayList<>();
+    static ArrayList<Line<Vector2I, Vector2I, LineType>> lines = new ArrayList<>();
 
     JFrame frame;
 
@@ -45,6 +43,8 @@ public class Client extends JPanel implements MouseListener, ActionListener {
     InputDataThread inputDataThread;
 
     static Tile[][] map = new Tile[60][60];
+
+    Vector2I leftTop = new Vector2I(map.length/2-30, map[0].length/2-30);
 
     public Client(String hostname){
         frame = new JFrame();
@@ -80,10 +80,8 @@ public class Client extends JPanel implements MouseListener, ActionListener {
             System.exit(1);
         }
 
-        map[0][0] = new Tile();
-
-        for(int x = 0; x < 20; x++){
-            for(int y = 0; y < 20; y++){
+        for(int x = 0; x < map.length; x++){
+            for(int y = 0; y < map[x].length; y++){
                 map[x][y] = new Tile();
             }
         }
@@ -115,17 +113,33 @@ public class Client extends JPanel implements MouseListener, ActionListener {
             g2d.drawLine(0,y, getWidth(), y);
         }
 
-        for(int x = 0; x < map.length; x++){
+        for(int x = 0; x < 60; x++){
             int xPos = x*10;
-            for(int y = 0; y < map[x].length; y++){
+            for(int y = 0; y < 60; y++){
                 int yPos = y*10;
                 try {
-                    map[x][y].draw(g2d, xPos, yPos);
+                    final Tile tile = map[x][y];
+                    if(tile.isFinished()){
+                        g2d.setColor(Color.GRAY);
+                        g2d.fillRect(xPos, yPos, 10, 10);
+                    }
+                    tile.draw(g2d, xPos, yPos);
                 }catch (NullPointerException e){
                     e.printStackTrace();
                     System.out.println("x: "+x+" y: "+y);
                     System.exit(1);
                 }
+            }
+        }
+
+        for(Line<Vector2I, Vector2I, LineType> line : lines){
+            g2d.setColor(Color.GREEN);
+            if(line.getType() == LineType.HORIZONTAL){
+                g2d.drawLine(line.getKey().getX()*10+5, line.getKey().getY()*10+5, line.getValue().getX()*10-5, line.getValue().getY()*10+5);
+            }else if(line.getType() == LineType.VERTICAL){
+                g2d.drawLine(line.getKey().getX()*10+5, line.getKey().getY()*10+5, line.getValue().getX()*10+5, line.getValue().getY()*10-5);
+            }else if(line.getType() == LineType.DIAGONAL){
+                g2d.drawLine(line.getKey().getX()*10+5, line.getKey().getY()*10+5, line.getValue().getX()*10-5, line.getValue().getY()*10-5);
             }
         }
     }
@@ -160,30 +174,53 @@ public class Client extends JPanel implements MouseListener, ActionListener {
         repaint();
     }
 
+    @Override
+    public void keyTyped(KeyEvent e) {
+
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+
+    }
+
     public class InputDataThread extends Thread{
         @Override
         public void run() {
             while (true){
                 try {
                     String dataIn = in.readLine();
-                    System.out.print(dataIn);
+                    System.out.println(dataIn);
                     JSONObject obj = new JSONObject(dataIn);
                     Pair<Type, JSONObject> tmp = new Pair<>(Type.valueOf(obj.getString("type")), obj.getJSONObject("data"));
 
                     //dataIn.add(tmp);
 
-                    if(tmp.getKey() == Type.TILE){
+                    final Type type = tmp.getKey();
+                    if(type == Type.TILE){
                         Pair<Vector2I, Tile> pair1 = Tile.fromJSON(tmp.getValue());
                         int x = pair1.getKey().getX(), y = pair1.getKey().getY();
                         map[x][y] = pair1.getValue();
                         //dataIn.remove(pair);
-                    }else if(tmp.getKey() == Type.MAP){
+                    }else if(type == Type.MAP){
                         JSONObject tiles = tmp.getValue();
                         for(String name : tiles.keySet()){
                             Pair<Vector2I, Tile> pair1 = Tile.fromJSON(tiles.getJSONObject(name).getJSONObject("value"));
                             int x = pair1.getKey().getX(), y = pair1.getKey().getY();
                             map[x][y] = pair1.getValue();
                         }
+                    }else if(type == Type.LINE){
+                        JSONObject startJSON = tmp.getValue();
+                        Vector2I start = new Vector2I(startJSON.getJSONObject("start").getInt("x"), startJSON.getJSONObject("start").getInt("y"));
+                        Vector2I end = new Vector2I(startJSON.getJSONObject("end").getInt("x"), startJSON.getJSONObject("end").getInt("y"));
+                        LineType lineType = startJSON.getEnum(LineType.class, "type");
+
+                        lines.add(new Line<>(start, end, lineType));
                     }
                 } catch (IOException e) {
                     e.printStackTrace();

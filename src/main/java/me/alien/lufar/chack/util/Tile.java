@@ -8,6 +8,7 @@ import java.awt.*;
 public class Tile {
     boolean placed = false;
     int id = 0;
+    boolean finished = false;
 
     public Tile(){}
 
@@ -23,6 +24,14 @@ public class Tile {
 
     public boolean isPlaced() {
         return placed;
+    }
+
+    public boolean isFinished(){
+        return finished;
+    }
+
+    public void setFinished(boolean finished) {
+        this.finished = finished;
     }
 
     public void draw(Graphics2D g2d, int x, int y){
@@ -51,6 +60,7 @@ public class Tile {
         obj.put("placed", placed);
         obj.put("x", x);
         obj.put("y", y);
+        obj.put("finished", finished);
         return obj;
     }
 
@@ -59,6 +69,7 @@ public class Tile {
         if(data.getBoolean("placed")){
             tile.place(data.getInt("id"));
         }
+        tile.setFinished(data.getBoolean("finished"));
         return new Pair<>(new Vector2I(data.getInt("x"), data.getInt("y")), tile);
     }
 }

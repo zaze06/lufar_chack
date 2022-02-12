@@ -18,7 +18,7 @@ dependencies {
 
 jar {
     manifest {
-        attributes "Main-Class": "me.alien.game.Game"
+        attributes "Main-Class": "me.alien.lufar.chack.Main"
     }
 
     from {

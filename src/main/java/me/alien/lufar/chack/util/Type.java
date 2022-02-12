@@ -8,5 +8,6 @@ public enum Type {
     TILE,
     INFO,
     ERROR,
-    CLICK
+    CLICK,
+    LINE
 }
