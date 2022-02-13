@@ -22,6 +22,8 @@ public class Main {
             Server.main(args1);
         }else if(args.contains("-client")){
             Client.main(args);
+        }else if(args.contains("-wss")){
+            me.alien.lufar.chack.ws.Server.main();
         }
     }
 }
