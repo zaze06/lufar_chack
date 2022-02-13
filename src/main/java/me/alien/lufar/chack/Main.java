@@ -12,7 +12,7 @@ import java.util.Arrays;
 
 public class Main {
 
-    public static final Version VERSION = new Version("1.0-STABLE");
+    public static final Version VERSION = new Version("1.2-STABLE");
     public static final ArrayList<Class<?>> listeners = new ArrayList<>();
 
     public static void main(String[] args1) {

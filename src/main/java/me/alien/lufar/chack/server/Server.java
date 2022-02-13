@@ -155,23 +155,24 @@ public class Server {
                             int id1 = checkTile.getValue().getId();
                             Vector2I pos = checkTile.getKey();
                             firstTile = pos;
-                            for(int x1 = -1; x1 <= 1; x1++){
-                                for(int y1 = -1; y1 <= 1; y1++){
+                            for(int xDir = -1; xDir <= 1; xDir++){
+                                for(int yDir = -1; yDir <= 1; yDir++){
                                     try{
-                                        if(y1 == 0 && x1 == 0) continue;
-                                        int y2 = pos.getY()+y1, x2 = pos.getX()+x1;
+                                        if(yDir == 0 && xDir == 0) continue;
+                                        int y2 = pos.getY()+yDir;
+                                        int x2 = pos.getX()+xDir;
                                         Tile t = map[x2][y2];
                                         int stack = 1;
-                                        do {
+                                        while (t.getId() == id1 && stack < 5) {
                                             if(t.isFinished()) break;
-                                            x2+=x1;
-                                            y2+=y1;
+                                            x2+=xDir;
+                                            y2+=yDir;
                                             t = map[x2][y2];
                                             stack++;
-                                        }while (t.getId() == id1 && stack < 5);
+                                        }
                                         if(stack == 5){
-                                            x2 -= x1;
-                                            y2 -= y1;
+                                            x2 -= xDir;
+                                            y2 -= yDir;
                                             finished = true;
                                             lastTile = new Vector2I(x2, y2);
                                             if(id1 == 1){

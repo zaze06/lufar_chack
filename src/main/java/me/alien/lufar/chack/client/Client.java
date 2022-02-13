@@ -106,17 +106,11 @@ public class Client extends JPanel implements MouseListener, ActionListener, Key
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        doDraw((Graphics2D) g);
+        Graphics2D g2d = (Graphics2D) g;
+        doDraw(g2d);
     }
 
     public void doDraw(Graphics2D g2d){
-        for(int x = 0; x < getWidth(); x+=10){
-            g2d.drawLine(x,0, x, getHeight());
-        }
-
-        for(int y = 0; y < getHeight(); y+=10){
-            g2d.drawLine(0,y, getWidth(), y);
-        }
 
         for(int x = 0; x < 60; x++){
             int xPos = x*10;
@@ -135,6 +129,14 @@ public class Client extends JPanel implements MouseListener, ActionListener, Key
                     System.exit(1);
                 }
             }
+        }
+
+        for(int x = 0; x < getWidth(); x+=10){
+            g2d.drawLine(x,0, x, getHeight());
+        }
+
+        for(int y = 0; y < getHeight(); y+=10){
+            g2d.drawLine(0,y, getWidth(), y);
         }
 
         for(Line<Vector2I, Vector2I, LineType> line : lines){
