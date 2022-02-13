@@ -42,9 +42,9 @@ public class Client extends JPanel implements MouseListener, ActionListener, Key
 
     InputDataThread inputDataThread;
 
-    static Tile[][] map = new Tile[60][60];
+    static Tile[][] map = new Tile[1000][1000];
 
-    Vector2I leftTop = new Vector2I(map.length/2-30, map[0].length/2-30);
+    Vector2I offset = new Vector2I(map.length/2-30, map[0].length/2-30);
 
     public Client(String hostname){
         frame = new JFrame();
@@ -52,8 +52,13 @@ public class Client extends JPanel implements MouseListener, ActionListener, Key
         frame.setSize(600,600);
 
         addMouseListener(this);
+        addKeyListener(this);
 
+        frame.addKeyListener(this);
         try {
+
+
+
             socket = new Socket(hostname, 3030);
 
             out = new PrintWriter(socket.getOutputStream(), true);
@@ -118,7 +123,7 @@ public class Client extends JPanel implements MouseListener, ActionListener, Key
             for(int y = 0; y < 60; y++){
                 int yPos = y*10;
                 try {
-                    final Tile tile = map[x][y];
+                    final Tile tile = map[x+offset.getX()][y+offset.getY()];
                     if(tile.isFinished()){
                         g2d.setColor(Color.GRAY);
                         g2d.fillRect(xPos, yPos, 10, 10);
@@ -134,19 +139,21 @@ public class Client extends JPanel implements MouseListener, ActionListener, Key
 
         for(Line<Vector2I, Vector2I, LineType> line : lines){
             g2d.setColor(Color.GREEN);
-            if(line.getType() == LineType.HORIZONTAL){
-                g2d.drawLine(line.getKey().getX()*10+5, line.getKey().getY()*10+5, line.getValue().getX()*10-5, line.getValue().getY()*10+5);
+            g2d.drawLine((line.getKey().getX()-offset.getX())*10+5, (line.getKey().getY()-offset.getY())*10+5,
+                    (line.getValue().getX()-offset.getX())*10+5, (line.getValue().getY()-offset.getY())*10+5);
+            /*if(line.getType() == LineType.HORIZONTAL){
+                g2d.drawLine(line.getKey().getX()*10-offset.getX()+5, line.getKey().getY()*10-offset.getY()+5, line.getValue().getX()*10-offset.getX()-5, line.getValue().getY()*10-offset.getY()+5);
             }else if(line.getType() == LineType.VERTICAL){
-                g2d.drawLine(line.getKey().getX()*10+5, line.getKey().getY()*10+5, line.getValue().getX()*10+5, line.getValue().getY()*10-5);
+                g2d.drawLine(line.getKey().getX()*10-offset.getX()+5, line.getKey().getY()*10-offset.getY()+5, line.getValue().getX()*10-offset.getX()+5, line.getValue().getY()*10-offset.getY()-5);
             }else if(line.getType() == LineType.DIAGONAL){
-                g2d.drawLine(line.getKey().getX()*10+5, line.getKey().getY()*10+5, line.getValue().getX()*10-5, line.getValue().getY()*10-5);
-            }
+                g2d.drawLine(line.getKey().getX()*10-offset.getX()+5, line.getKey().getY()*10-offset.getY()+5, line.getValue().getX()*10-offset.getX()-5, line.getValue().getY()*10-offset.getY()-5);
+            }*/
         }
     }
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        out.println(new DataPacket(Type.CLICK, new JSONObject().put("x", e.getX()).put("y", e.getY()), "").toJSON());
+        out.println(new DataPacket(Type.CLICK, new JSONObject().put("x", e.getX()/10+offset.getX()).put("y", e.getY()/10+offset.getY()), "").toJSON());
     }
 
     @Override
@@ -176,12 +183,20 @@ public class Client extends JPanel implements MouseListener, ActionListener, Key
 
     @Override
     public void keyTyped(KeyEvent e) {
-
+        System.out.println("Key tyoed");
     }
 
     @Override
     public void keyPressed(KeyEvent e) {
-
+        if(e.getKeyCode() == KeyEvent.VK_W || e.getKeyCode() == KeyEvent.VK_UP){
+            offset.addY(-1);
+        }else if(e.getKeyCode() == KeyEvent.VK_S || e.getKeyCode() == KeyEvent.VK_DOWN){
+            offset.addY(1);
+        }else if(e.getKeyCode() == KeyEvent.VK_A || e.getKeyCode() == KeyEvent.VK_LEFT){
+            offset.addX(-1);
+        }else if(e.getKeyCode() == KeyEvent.VK_D || e.getKeyCode() == KeyEvent.VK_RIGHT){
+            offset.addX(1);
+        }
     }
 
     @Override
@@ -196,12 +211,11 @@ public class Client extends JPanel implements MouseListener, ActionListener, Key
                 try {
                     String dataIn = in.readLine();
                     System.out.println(dataIn);
-                    JSONObject obj = new JSONObject(dataIn);
-                    Pair<Type, JSONObject> tmp = new Pair<>(Type.valueOf(obj.getString("type")), obj.getJSONObject("data"));
+                    JSONObject object = new JSONObject(dataIn);
+                    JSONObject data = object.getJSONObject("data");
+                    Type type = object.getEnum(Type.class, "type");
+                    Pair<Type, JSONObject> tmp = new Pair<>(type, data);
 
-                    //dataIn.add(tmp);
-
-                    final Type type = tmp.getKey();
                     if(type == Type.TILE){
                         Pair<Vector2I, Tile> pair1 = Tile.fromJSON(tmp.getValue());
                         int x = pair1.getKey().getX(), y = pair1.getKey().getY();
@@ -221,6 +235,8 @@ public class Client extends JPanel implements MouseListener, ActionListener, Key
                         LineType lineType = startJSON.getEnum(LineType.class, "type");
 
                         lines.add(new Line<>(start, end, lineType));
+                    }else if(type == Type.NAME){
+                        frame.setTitle(tmp.getValue().getString("name"));
                     }
                 } catch (IOException e) {
                     e.printStackTrace();

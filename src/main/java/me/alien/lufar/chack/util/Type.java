@@ -9,5 +9,6 @@ public enum Type {
     INFO,
     ERROR,
     CLICK,
-    LINE
+    LINE,
+    NAME
 }

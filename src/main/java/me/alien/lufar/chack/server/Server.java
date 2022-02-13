@@ -25,7 +25,7 @@ public class Server {
 
     ServerSocket serverSocket;
 
-    static Tile[][] map = new Tile[60][60];
+    static Tile[][] map = new Tile[1000][1000];
     static ArrayList<Pair<Vector2I, Tile>> currentPlating = new ArrayList<>();
 
     Client player1, player2;
@@ -35,6 +35,9 @@ public class Server {
     ClientAsceptThread clientAsceptThread;
 
     DataHandler dataHandler;
+
+    int player1Wins = 0;
+    int player2Wins = 0;
 
     int turn = 1;
 
@@ -85,9 +88,11 @@ public class Server {
                     int id;
                     if(player1 == null){
                         player1 = new Client(socket, 1, server);
+                        player1.out.println(new DataPacket(Type.NAME, new JSONObject().put("name", "You have: "+player1Wins+" wins. Player 2 have: "+player2Wins+" wins"), "").toJSON());
                         id = 1;
                     }else if(player2 == null){
                         player2 = new Client(socket, 2, server);
+                        player2.out.println(new DataPacket(Type.NAME, new JSONObject().put("name", "You have: "+player2Wins+" wins. Player 1 have: "+player1Wins+" wins"), "").toJSON());
                         id = 2;
                     }else{
                         out.println(new DataPacket(Type.ERROR, new JSONObject().put("error", "Server full"), "Server full").toJSON());
@@ -136,9 +141,11 @@ public class Server {
                     if(player1 == null || player2 == null) continue;
                     if(turn == id) {
                         final JSONObject tile = data.getValue();
-                        int x = tile.getInt("x")/10;
-                        int y = tile.getInt("y")/10;
+                        int x = tile.getInt("x");
+                        int y = tile.getInt("y");
                         if(map[x][y].isPlaced()) continue;
+                        for(Pair<Vector2I, Tile> checkTile : currentPlating){
+                        }
                         map[x][y].place(id);
                         currentPlating.add(new Pair<>(new Vector2I(x,y), map[x][y]));
                         Vector2I firstTile = null;
@@ -155,16 +162,23 @@ public class Server {
                                         int y2 = pos.getY()+y1, x2 = pos.getX()+x1;
                                         Tile t = map[x2][y2];
                                         int stack = 1;
-                                        while (t.getId() == id1 && stack < 5){
+                                        do {
                                             if(t.isFinished()) break;
                                             x2+=x1;
                                             y2+=y1;
                                             t = map[x2][y2];
                                             stack++;
-                                        }
+                                        }while (t.getId() == id1 && stack < 5);
                                         if(stack == 5){
+                                            x2 -= x1;
+                                            y2 -= y1;
                                             finished = true;
                                             lastTile = new Vector2I(x2, y2);
+                                            if(id1 == 1){
+                                                player1Wins++;
+                                            }else if(id1 == 2){
+                                                player2Wins++;
+                                            }
                                             break;
                                         }
                                     }catch (IndexOutOfBoundsException e){
@@ -187,6 +201,8 @@ public class Server {
 
                                 line.put("start", firstTile.toJSON());
                                 line.put("end", lastTile.toJSON());
+
+
                                 LineType lineType = LineType.DIAGONAL;
                                 if(firstTile.getY() == lastTile.getY()){
                                     lineType = LineType.HORIZONTAL;
@@ -206,6 +222,9 @@ public class Server {
 
                             player1.out.println(new DataPacket(Type.LINE, line, "").toJSON());
                             player2.out.println(new DataPacket(Type.LINE, line, "").toJSON());
+
+                            player1.out.println(new DataPacket(Type.NAME, new JSONObject().put("name", "You have: "+player1Wins+" wins. Player 2 have: "+player2Wins+" wins"), "").toJSON());
+                            player2.out.println(new DataPacket(Type.NAME, new JSONObject().put("name", "You have: "+player2Wins+" wins. Player 1 have: "+player1Wins+" wins"), "").toJSON());
                             currentPlating = new ArrayList<>();
                             continue;
                         }
