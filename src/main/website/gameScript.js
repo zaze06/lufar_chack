@@ -55,7 +55,7 @@ setInterval(function(){
 
     //ctx.clearRect(0, 0, c.width, c.height);
 
-    ctx.lineWidth = 0.5;
+    ctx.lineWidth = 1;
 
     for(var x = 0; x < 60; x++){
         for(var y = 0; y < 60; y++){
@@ -70,9 +70,21 @@ setInterval(function(){
             }
             if(id == 1){
                 ctx.strokeStyle = '#00F'
-                ctx.strokeRect(xPos+1, yPos+1, 8, 8);
+                if(tile.finished){
+                    ctx.strokeStyle = '#00A'
+                }
+                ctx.beginPath();
+                ctx.moveTo(xPos+1, yPos+1);
+                ctx.lineTo(xPos+9, yPos+9);
+                ctx.moveTo(xPos+9, yPos+1);
+                ctx.lineTo(xPos+1, yPos+9);
+                ctx.stroke();
+                ctx.closePath();
             }else if(id == 2){
                 ctx.strokeStyle = '#F00'
+                if(tile.finished){
+                    ctx.strokeStyle = '#A00'
+                }
                 ctx.beginPath();
                 ctx.arc(xPos+5, yPos+5, 4, 0, 2 * Math.PI);
                 ctx.stroke();
@@ -102,6 +114,7 @@ setInterval(function(){
     ctx.closePath()
 
     ctx.strokeStyle = '#0F0'
+    ctx.lineWidth = 2;
 
     ctx.beginPath()
 

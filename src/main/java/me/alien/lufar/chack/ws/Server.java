@@ -35,6 +35,8 @@ public class Server extends WebSocketServer {
 
     static Tile[][] map = new Tile[60][60];
 
+    int maxDistance = 1;
+
     ArrayList<Pair<Vector2I, Tile>> currentPlating = new ArrayList<>();
 
     @Override
@@ -80,8 +82,32 @@ public class Server extends WebSocketServer {
                 int x = tile.getInt("x");
                 int y = tile.getInt("y");
                 if(map[x][y].isPlaced()) return;
+
+                boolean valid = false;
                 for(Pair<Vector2I, Tile> checkTile : currentPlating){
+                    Vector2I pos = checkTile.getKey();
+                    for(int xDir = -maxDistance; xDir <= maxDistance; xDir++){
+                        for(int yDir = -maxDistance; yDir <= maxDistance; yDir++){
+                            int x1 = pos.getX()+xDir;
+                            int y1 = pos.getY()+yDir;
+                            if(x1 == x && y1 == y){
+                                valid = true;
+                                break;
+                            }
+                        }
+                        if(valid){
+                            break;
+                        }
+                    }
+                    if(valid){
+                        break;
+                    }
                 }
+                if(currentPlating.isEmpty()){
+                    valid = true;
+                }
+                if(!valid) return;
+
                 map[x][y].place(id);
                 currentPlating.add(new Pair<>(new Vector2I(x,y), map[x][y]));
                 Vector2I firstTile = null;
