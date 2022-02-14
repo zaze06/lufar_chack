@@ -185,7 +185,7 @@ public class Client extends JPanel implements MouseListener, ActionListener, Key
 
     @Override
     public void keyTyped(KeyEvent e) {
-        System.out.println("Key tyoed");
+
     }
 
     @Override
