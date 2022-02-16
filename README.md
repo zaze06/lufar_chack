@@ -11,6 +11,7 @@ OPS if you need the old way check in commits list and check for old version or u
    - Safari(Mac os, IOS)
    - Microsoft Edge
    - FireFox
+   - Chrome(sometimes)
    - NOTE this is the tested and confirmed working if your preferred browser is not listen feel free to try it if it works create a pull request, if it doesn't use the development tools and give me the error message in an [issue](https://github.com/zaze06/lufar_chack/issues)
 2. open [http://4zellen.se/zacharias/game](http://4zellen.se/zacharias/game)
 3. enter desired lobby id when prompted(at this point if you don't get a prompt in less than 2 minutes open the web developer console copy the content and make an [issue](https://github.com/zaze06/lufar_chack/issues))
