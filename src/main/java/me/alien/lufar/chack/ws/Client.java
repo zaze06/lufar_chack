@@ -13,6 +13,7 @@ import java.awt.event.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class Client extends WebSocketClient implements MouseListener, ActionListener, KeyListener {
 
@@ -69,7 +70,7 @@ public class Client extends WebSocketClient implements MouseListener, ActionList
                             g2d.setColor(Color.GRAY);
                             g2d.fillRect(xPos, yPos, 10, 10);
                         }
-                        tile.draw(g2d, xPos, yPos);
+                        tile.draw(g2d, xPos, yPos, 10);
                     }catch (NullPointerException e){
                         e.printStackTrace();
                         System.out.println("x: "+x+" y: "+y);
@@ -110,7 +111,7 @@ public class Client extends WebSocketClient implements MouseListener, ActionList
 
     @Override
     public void onOpen(ServerHandshake handshakedata) {
-
+        //send();
     }
 
     @Override
@@ -141,7 +142,9 @@ public class Client extends WebSocketClient implements MouseListener, ActionList
             lines.add(new Line<>(start, end, lineType));
         }else if(type == Type.NAME){
             frame.setTitle(tmp.getValue().getString("name"));
-        }
+        }// else if(type == Type.CREATE_LOBBY) {
+
+        //}
     }
 
     @Override
@@ -157,6 +160,7 @@ public class Client extends WebSocketClient implements MouseListener, ActionList
     public static void main(ArrayList<String> args){
         String hostname = "localhost";
         int port = 8080;
+        int lobby;
         String completeHostname = "";
         if(args.contains("-hostname")){
             hostname = args.get(args.indexOf("-hostname")+1);
@@ -168,6 +172,16 @@ public class Client extends WebSocketClient implements MouseListener, ActionList
             completeHostname = args.get(args.indexOf("-ip")+1);
         }else{
             completeHostname = "ws://"+hostname+":"+port;
+        }
+        if(args.contains("-lobby")){
+            try{
+                lobby = Integer.getInteger(args.get(args.indexOf("-lobby") + 1));
+            }catch (Exception e){
+
+            }
+            //if(Objects.isNull(lobby)){
+
+            //}
         }
 
         try {

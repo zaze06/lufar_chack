@@ -2,10 +2,10 @@ package me.alien.lufar.chack;
 
 import me.alien.lufar.chack.util.*;
 import me.alien.lufar.chack.util.math.Vector2I;
-import me.alien.lufar.chack.util.networking.DataPacket;
 import org.json.JSONObject;
 
 import javax.swing.*;
+import javax.swing.plaf.ColorUIResource;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
@@ -30,6 +30,12 @@ public class Game extends JPanel implements KeyListener, MouseListener, ActionLi
     int turn = 1;
 
     int maxDistance = 1;
+
+    int size = 10;
+
+    String score = "X have: "+player1Wins+" wins. O have: "+player2Wins+" wins";
+
+    Tile latestTile = null;
 
     public Game(ArrayList<String> args){
 
@@ -85,17 +91,23 @@ public class Game extends JPanel implements KeyListener, MouseListener, ActionLi
 
     public void doDraw(Graphics2D g2d){
 
-        for(int x = 0; x < 60; x++){
-            int xPos = x*10;
-            for(int y = 0; y < 60; y++){
-                int yPos = y*10;
+        frame.setTitle(score+". "+getWidth()/size+":"+getHeight()/size);
+
+        for(int x = 0; x < getWidth()/size; x++){
+            int xPos = x*size;
+            for(int y = 0; y < getHeight()/size; y++){
+                int yPos = y*size;
                 try {
                     final Tile tile = map[x+offset.getX()][y+offset.getY()];
                     if(tile.isFinished()){
                         g2d.setColor(Color.GRAY);
-                        g2d.fillRect(xPos, yPos, 10, 10);
+                        g2d.fillRect(xPos, yPos, size, size);
                     }
-                    tile.draw(g2d, xPos, yPos);
+                    if(tile == latestTile){
+                        g2d.setColor(new ColorUIResource(Integer.parseInt("47b548", 16)));
+                        g2d.fillRect(xPos, yPos, size, size);
+                    }
+                    tile.draw(g2d, xPos, yPos, size);
                 }catch (NullPointerException e){
                     e.printStackTrace();
                     System.out.println("x: "+x+" y: "+y);
@@ -106,19 +118,19 @@ public class Game extends JPanel implements KeyListener, MouseListener, ActionLi
 
         g2d.setColor(Color.BLACK);
 
-        for(int x = 0; x < getWidth(); x+=10){
+        for(int x = 0; x < getWidth(); x+=size){
             g2d.drawLine(x,0, x, getHeight());
         }
 
-        for(int y = 0; y < getHeight(); y+=10){
+        for(int y = 0; y < getHeight(); y+=size){
             g2d.drawLine(0,y, getWidth(), y);
         }
 
         g2d.setColor(Color.GREEN);
 
         for(Line<Vector2I, Vector2I, LineType> line : lines){
-            g2d.drawLine((line.getKey().getX()-offset.getX())*10+5, (line.getKey().getY()-offset.getY())*10+5,
-                    (line.getValue().getX()-offset.getX())*10+5, (line.getValue().getY()-offset.getY())*10+5);
+            g2d.drawLine((line.getKey().getX()-offset.getX())*size+5, (line.getKey().getY()-offset.getY())*size+5,
+                    (line.getValue().getX()-offset.getX())*size+5, (line.getValue().getY()-offset.getY())*size+5);
             /*if(line.getType() == LineType.HORIZONTAL){
                 g2d.drawLine(line.getKey().getX()*10-offset.getX()+5, line.getKey().getY()*10-offset.getY()+5, line.getValue().getX()*10-offset.getX()-5, line.getValue().getY()*10-offset.getY()+5);
             }else if(line.getType() == LineType.VERTICAL){
@@ -149,6 +161,24 @@ public class Game extends JPanel implements KeyListener, MouseListener, ActionLi
             offset.addX(-1);
         }else if(e.getKeyCode() == KeyEvent.VK_D || e.getKeyCode() == KeyEvent.VK_RIGHT){
             offset.addX(1);
+        }else if(e.getKeyCode() == KeyEvent.VK_B){
+            if(size+10 < getWidth()){
+                size+=10;
+            }
+        }else if(e.getKeyCode() == KeyEvent.VK_M){
+            if(size-10 > 0) {
+                size -= 10;
+            }
+        }else if(e.getKeyCode() == KeyEvent.VK_Q){
+            JSONObject map = new JSONObject();
+            for(int x = 0; x < this.map.length; x++){
+                for(int y = 0; y < this.map[x].length; y++){
+                    Tile tile = this.map[x][y];
+                    if(false){
+
+                    }
+                }
+            }
         }
     }
 
@@ -160,8 +190,8 @@ public class Game extends JPanel implements KeyListener, MouseListener, ActionLi
     @Override
     public void mouseClicked(MouseEvent e) {
 
-        int x = e.getX()/10+offset.getX();
-        int y = e.getY()/10+offset.getY();
+        int x = e.getX()/size+offset.getX();
+        int y = e.getY()/size+offset.getY();
 
         if(map[x][y].isPlaced()) return;
 
@@ -190,6 +220,7 @@ public class Game extends JPanel implements KeyListener, MouseListener, ActionLi
         }
         if(!valid) return;
         map[x][y].place(turn);
+        latestTile = map[x][y];
         currentPlating.add(new Pair<>(new Vector2I(x,y), map[x][y]));
         Vector2I firstTile = null;
         Vector2I lastTile = null;
@@ -257,8 +288,9 @@ public class Game extends JPanel implements KeyListener, MouseListener, ActionLi
                 final int x1 = pos.getX();
                 finishedMap.put(x1 +":"+ y1, new Pair<>(pos.toJSON(), checkTile.getValue().toJSON(x1, y1)).toJSON(x1, y1));
 
-                frame.setTitle("X have: "+player1Wins+" wins. O have: "+player2Wins+" wins");
+                score = "X have: "+player1Wins+" wins. O have: "+player2Wins+" wins";
             }
+            currentPlating = new ArrayList<>();
         }
         turn = (turn==1?2:1);
     }

@@ -34,14 +34,21 @@ public class Tile {
         this.finished = finished;
     }
 
-    public void draw(Graphics2D g2d, int x, int y){
+    public boolean isEmpty(){
+        if(id == 0) return true;
+        return false;
+    }
+
+    public void draw(Graphics2D g2d, int x, int y, int size){
         if(placed) {
             if (id == 1) {
                 g2d.setColor(Color.BLUE);
-                g2d.drawRect(x + 2, y + 2, 6, 6);
+                //g2d.drawRect(x + (2*(size/10)), y + (2*(size/10)), size-(4*(size/10)), size-(4*(size/10)));
+                g2d.drawLine(x+(2*(size/10)), y+(2*(size/10)), x+size-(2*(size/10)), y+size-(2*(size/10)));
+                g2d.drawLine(x+size-(2*(size/10)), y+(2*(size/10)), x+(2*(size/10)), y+size-(2*(size/10)));
             } else if (id == 2) {
                 g2d.setColor(Color.red);
-                g2d.drawArc(x + 2, y + 2, 6, 6, 0, 360);
+                g2d.drawArc(x + (2*(size/10)), y + (2*(size/10)), size-(4*(size/10)), size-(4*(size/10)), 0, 360);
             }
         }
     }

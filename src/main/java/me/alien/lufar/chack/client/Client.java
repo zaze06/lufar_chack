@@ -122,7 +122,7 @@ public class Client extends JPanel implements MouseListener, ActionListener, Key
                         g2d.setColor(Color.GRAY);
                         g2d.fillRect(xPos, yPos, 10, 10);
                     }
-                    tile.draw(g2d, xPos, yPos);
+                    tile.draw(g2d, xPos, yPos, 10);
                 }catch (NullPointerException e){
                     e.printStackTrace();
                     System.out.println("x: "+x+" y: "+y);

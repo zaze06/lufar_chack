@@ -1,9 +1,9 @@
 const c = document.getElementById("game");
 const ctx = c.getContext("2d");
+var lobbyId = 0;
+var latestTile;
 
-const IP = prompt('IP to webserver', 'ws://localhost:8080');
-
-webSocket = new WebSocket(IP);
+webSocket = new WebSocket("ws://94.136.83.59:8080");
 
 var map = [];
 for(var x = 0; x < 60; x++){
@@ -30,6 +30,7 @@ webSocket.onmessage = function (event){
         map[x][y].placed = TileData.placed;
         map[x][y].id = TileData.id;
         map[x][y].finished = TileData.finished;
+        latestTile = map[x][y];
     }else if(type == "LINE"){
         lines[lines.length] = {start:{x:data.data.start.x, y:data.data.start.y}, end:{x:data.data.end.x, y:data.data.end.y}};
     }else if(type == "NAME"){
@@ -48,12 +49,26 @@ webSocket.onmessage = function (event){
             map[x][y].finished = tile.finished;
             map[x][y].id = tile.id;
         }
+    }else if(type == "CREATE_LOBBY"){
+        var info = data.data.message;
+        var create = confirm(info);
+        if(create){
+            var md = parseInt(prompt('what shuld the max amount of tiles that can be between a placed marker and a new one'));
+            var singleClient = confirm("will it only be one client? (if you select yes to this both players will play in this browser tab)");
+            webSocket.send(JSON.stringify({type:"CREATE_LOBBY", data:{md:md, singleClient:singleClient, lobby:lobbyId}, error:""}));
+        }else{
+            window.location.reload();
+        }
+    }else if(type == "JOIN"){
+        lobbyId = prompt('lobby id. This is the id for the lobby if the lobby docent exist it will ask you if you wanna create it');
+
+        webSocket.send(JSON.stringify({type:"DATA", data:{lobby:lobbyId}, error:""}));
     }
 }
 
 setInterval(function(){
 
-    //ctx.clearRect(0, 0, c.width, c.height);
+    ctx.clearRect(0, 0, c.width, c.height);
 
     ctx.lineWidth = 1;
 
@@ -65,13 +80,16 @@ setInterval(function(){
 
             var id = tile.id;
             if(tile.finished){
-                ctx.fillStyle = '#a4a4a4'
+                ctx.fillStyle = '#a4a4a4';
+                ctx.fillRect(xPos, yPos, 10, 10);
+            }else if(tile == latestTile){
+                ctx.fillStyle = '#47b548';
                 ctx.fillRect(xPos, yPos, 10, 10);
             }
             if(id == 1){
-                ctx.strokeStyle = '#00F'
+                ctx.strokeStyle = '#00F';
                 if(tile.finished){
-                    ctx.strokeStyle = '#00A'
+                    ctx.strokeStyle = '#00A';
                 }
                 ctx.beginPath();
                 ctx.moveTo(xPos+1, yPos+1);
@@ -81,21 +99,22 @@ setInterval(function(){
                 ctx.stroke();
                 ctx.closePath();
             }else if(id == 2){
-                ctx.strokeStyle = '#F00'
+                ctx.strokeStyle = '#F00';
                 if(tile.finished){
-                    ctx.strokeStyle = '#A00'
+                    ctx.strokeStyle = '#A00';
                 }
                 ctx.beginPath();
                 ctx.arc(xPos+5, yPos+5, 4, 0, 2 * Math.PI);
+                ctx.arc(xPos+5, yPos+5, 4, 0, 2 * Math.PI);
                 ctx.stroke();
-                ctx.closePath()
+                ctx.closePath();
             }
         }
     }
 
     
 
-    ctx.strokeStyle = '#000'
+    ctx.strokeStyle = '#000';
 
     ctx.beginPath();
 
@@ -111,12 +130,12 @@ setInterval(function(){
         ctx.stroke();
     }
 
-    ctx.closePath()
+    ctx.closePath();
 
-    ctx.strokeStyle = '#0F0'
+    ctx.strokeStyle = '#0F0';
     ctx.lineWidth = 2;
 
-    ctx.beginPath()
+    ctx.beginPath();
 
     for(var i = 0; i < lines.length; i++){
         var line = lines[i];
@@ -124,8 +143,8 @@ setInterval(function(){
         ctx.lineTo((line.end.x-offset.x)*10+5, (line.end.y-offset.x)*10+5);
     }
     
-    ctx.stroke()
-    ctx.closePath()
+    ctx.stroke();
+    ctx.closePath();
 }, 100);
 
 c.addEventListener('mouseup', e => {
