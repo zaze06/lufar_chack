@@ -9,8 +9,15 @@ public class Tile {
     boolean placed = false;
     int id = 0;
     boolean finished = false;
+    Vector2I pos;
 
-    public Tile(){}
+    public Tile(int x, int y){
+        this(new Vector2I(x,y));
+    }
+
+    public Tile(Vector2I pos){
+        this.pos = pos;
+    }
 
     public Tile place(int id){
         placed = true;
@@ -34,6 +41,14 @@ public class Tile {
         this.finished = finished;
     }
 
+    public Vector2I getPos() {
+        return pos;
+    }
+
+    public void setPos(Vector2I pos) {
+        this.pos = pos;
+    }
+
     public boolean isEmpty(){
         if(id == 0) return true;
         return false;
@@ -54,7 +69,7 @@ public class Tile {
     }
 
     public Tile clone() {
-        Tile tile = new Tile();
+        Tile tile = new Tile(this.pos);
         if(placed){
             tile.place(id);
         }
@@ -68,15 +83,27 @@ public class Tile {
         obj.put("x", x);
         obj.put("y", y);
         obj.put("finished", finished);
+        obj.put("pos", pos.toJSON());
         return obj;
     }
 
     public static Pair<Vector2I, Tile> fromJSON(JSONObject data){
-        Tile tile = new Tile();
+        final JSONObject pos = data.getJSONObject("pos");
+        Tile tile = new Tile(Vector2I.fromJSON(pos));
         if(data.getBoolean("placed")){
             tile.place(data.getInt("id"));
         }
         tile.setFinished(data.getBoolean("finished"));
         return new Pair<>(new Vector2I(data.getInt("x"), data.getInt("y")), tile);
+    }
+
+    @Override
+    public String toString() {
+        return "Tile{" +
+                "placed=" + placed +
+                ", id=" + id +
+                ", finished=" + finished +
+                ", pos=" + pos +
+                '}';
     }
 }

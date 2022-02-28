@@ -1,10 +1,6 @@
 package me.alien.lufar.chack.ws;
 
-import me.alien.lufar.chack.util.LineType;
-import me.alien.lufar.chack.util.Pair;
-import me.alien.lufar.chack.util.Tile;
 import me.alien.lufar.chack.util.Type;
-import me.alien.lufar.chack.util.math.Vector2I;
 import me.alien.lufar.chack.util.networking.DataPacket;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
@@ -21,34 +17,33 @@ import java.util.Map;
 
 public class Server extends WebSocketServer {
 
-    private int turn = 1;
-
     public Server(int port){
         super(new InetSocketAddress(port));
     }
 
-    static Tile[][] map = new Tile[60][60];
-
     ArrayList<WebSocket> fallback = new ArrayList<>();
     ArrayList<WebSocket> waitingHosts = new ArrayList<>();
+    ArrayList<WebSocket> clients = new ArrayList<>();
 
-    Map<Integer, Lobby> lobbys = new HashMap<>();
+    Map<Integer, Lobby> lobby = new HashMap<>();
 
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
         System.out.println("new client put in fallback");
         fallback.add(conn);
         conn.send(new DataPacket(Type.JOIN, new JSONObject().put("info", "welcome"), "").toJSON().toString());
+        clients.add(conn);
     }
 
     @Override
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
         fallback.remove(conn);
         waitingHosts.remove(conn);
-        for(Map.Entry<Integer, Lobby> entryLobby : lobbys.entrySet()){
+        clients.remove(conn);
+        for(Map.Entry<Integer, Lobby> entryLobby : lobby.entrySet()){
             Lobby lobby = entryLobby.getValue();
             if(lobby.remove(conn)){
-                lobbys.remove(entryLobby.getKey());
+                this.lobby.remove(entryLobby.getKey());
             }
         }
     }
@@ -57,10 +52,11 @@ public class Server extends WebSocketServer {
     public void onMessage(WebSocket conn, String message) {
         JSONObject rawData = new JSONObject(message);
         JSONObject data = rawData.getJSONObject("data");
+        final int lobbyID = data.getInt("lobby");
         if(fallback.contains(conn)){
-            Lobby lobby = lobbys.get(data.getInt("lobby"));
+            Lobby lobby = this.lobby.get(lobbyID);
             if(lobby == null){
-                conn.send(new DataPacket(Type.CREATE_LOBBY, new JSONObject().put("lobby", data.getInt("lobby")).put("message", "lobby dos not exist, whana create it?"), "").toJSON().toString());
+                conn.send(new DataPacket(Type.CREATE_LOBBY, new JSONObject().put("lobby", lobbyID).put("message", "lobby dos not exist, wanna create it?"), "").toJSON().toString());
                 fallback.remove(conn);
                 waitingHosts.add(conn);
             }else {
@@ -71,14 +67,15 @@ public class Server extends WebSocketServer {
                 }
             }
         }else if(waitingHosts.contains(conn)){
-            Lobby lobby = new Lobby(data.getInt("md"), data.getBoolean("singleClient"));
+            Lobby lobby = new Lobby(data.getInt("md"), data.getInt("mode"));
             lobby.addPlayer(conn);
-            lobbys.put(data.getInt("lobby"), lobby);
+            this.lobby.put(lobbyID, lobby);
             waitingHosts.remove(conn);
         }else{
-            for(Map.Entry<Integer, Lobby> entryLobby : lobbys.entrySet()){
+            for(Map.Entry<Integer, Lobby> entryLobby : lobby.entrySet()){
                 Lobby lobby = entryLobby.getValue();
-                if(lobby.contains(conn)){
+                int lobbyId = entryLobby.getKey();
+                if(lobbyId == lobbyID){
                     lobby.onMessage(conn, message);
                 }
             }
@@ -104,14 +101,21 @@ public class Server extends WebSocketServer {
 
         while(true){
             try {
-                String data = in.readLine();
-                if(data.equalsIgnoreCase("exit")){
+                String[] data = in.readLine().split(" ");
+                String command = data[0];
+                ArrayList<String> args = new ArrayList<>();
+
+                for(int i = 1; i < data.length; i++){
+                    args.add(data[i]);
+                }
+
+                if(command.equalsIgnoreCase("exit")){
                     server.stop();
                     System.exit(0);
+                }else if(command.equalsIgnoreCase("kick")){
+
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
+            } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             }
 

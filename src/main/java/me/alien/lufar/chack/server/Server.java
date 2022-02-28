@@ -59,7 +59,7 @@ public class Server {
 
         for(int x = 0; x < map.length; x++){
             for(int y = 0; y < map[x].length; y++){
-                map[x][y] = new Tile();
+                map[x][y] = new Tile(x,y);
             }
         }
 
