@@ -13,11 +13,27 @@ chatData[0] = "Welcome!";
 
 webSocket = new WebSocket("ws://94.136.83.59:8080");
 
+if(!webSocket){
+    game.set
+}
+
+var tmp = 0;
+
 var map = [];
 for(var x = 0; x < 60; x++){
     map[x] = []
     for(var y = 0; y < 60; y++){
-        map[x][y] = {placed:false, id:0, finished:false};
+        map[x][y] = {placed:false, id:tmp, finished:false};
+        /*if(tmp == 1){
+            tmp = 2;
+        }else{
+            tmp = 1
+        }
+    }
+    if(tmp == 1){
+        tmp = 2;
+    }else{
+        tmp = 1*/
     }
 }
 
@@ -47,7 +63,7 @@ webSocket.onmessage = function (event){
         console.error(data.error);
         window.location.reload();
     }else if(type == "MAP"){
-        /*var tmpMap = data.data;
+        var tmpMap = data.data;
         for(var tileData in tmpMap){
             var tile = tmpMap[tileData].value;
             var x = tile.x;
@@ -56,7 +72,7 @@ webSocket.onmessage = function (event){
             map[x][y].placed = tile.placed;
             map[x][y].finished = tile.finished;
             map[x][y].id = tile.id;
-        }*/
+        }
     }else if(type == "CREATE_LOBBY"){
         var info = data.data.message;
         var create = confirm(info);
@@ -91,7 +107,7 @@ setInterval(function(){
 
             var id = tile.id;
             if(tile.finished){
-                gameCtx.fillStyle = '#a4a4a4';
+                gameCtx.fillStyle = '#9b9';
                 gameCtx.fillRect(xPos, yPos, 10, 10);
             }else if(tile == latestTile){
                 gameCtx.fillStyle = '#47b548';
@@ -100,7 +116,7 @@ setInterval(function(){
             if(id == 1){
                 gameCtx.strokeStyle = '#00F';
                 if(tile.finished){
-                    gameCtx.strokeStyle = '#00A';
+                    gameCtx.strokeStyle = '#008';
                 }
                 gameCtx.beginPath();
                 gameCtx.moveTo(xPos+1, yPos+1);
@@ -112,7 +128,7 @@ setInterval(function(){
             }else if(id == 2){
                 gameCtx.strokeStyle = '#F00';
                 if(tile.finished){
-                    gameCtx.strokeStyle = '#A00';
+                    gameCtx.strokeStyle = '#800';
                 }
                 gameCtx.beginPath();
                 gameCtx.arc(xPos+5, yPos+5, 4, 0, 2 * Math.PI);
