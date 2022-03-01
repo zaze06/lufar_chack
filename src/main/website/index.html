@@ -1,4 +1,10 @@
-<html>
-    <canvas id="game", width="600", height="600", style="border:1px solid #000000;"></canvas>
+<!DOCTYPE html>
+<html style="background-color: darkgray;">
+    <!--style href="design.css"></style-->
+    <canvas id="game", width="600", height="600", style="border:2px solid #000000; background-color: gray; z-index: 0;"></canvas>
+    <canvas id="chat", width="200", height="582", style="border:2px solid #000000; background-color: gray; top: -18px; right: 6px; position: relative; z-index: 1;"></canvas>
+    <input type="text" id="chatMessage" name="fname", style="background-color: gray ; right: -5px; right: 212px; position: relative; width: 195px; z-index: 0;">
+    <!--input type="checkbox" id="darkMode" name="darkMode" value="dark mode" style="left: -1027px; top: 12px; position: relative;"-->
+    <!--p style="position: relative; top: -23px; left: 15px;">dark mode</p-->
     <script src="gameScript.js"></script>
 </html>

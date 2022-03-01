@@ -74,8 +74,7 @@ public class Server extends WebSocketServer {
         }else{
             for(Map.Entry<Integer, Lobby> entryLobby : lobby.entrySet()){
                 Lobby lobby = entryLobby.getValue();
-                int lobbyId = entryLobby.getKey();
-                if(lobbyId == lobbyID){
+                if(lobby.contains(conn)){
                     lobby.onMessage(conn, message);
                 }
             }

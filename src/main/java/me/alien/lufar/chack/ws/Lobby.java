@@ -103,7 +103,15 @@ public class Lobby {
                 }
             }
         }else if(data.getKey() == Type.MESSAGE){
-
+            int playerID = 0;
+            if(conn == player1){
+                playerID = 1;
+            }else if(conn == player2){
+                playerID = 2;
+            }
+            DataPacket message1 = new DataPacket(Type.MESSAGE, new JSONObject().put("message", "Player "+playerID+": "+data.getValue().getString("message")), "");
+            if(player1 != null) player1.send(message1.toJSON().toString());
+            if(player2 != null) player2.send(message1.toJSON().toString());
         }
     }
 
@@ -457,15 +465,18 @@ public class Lobby {
             if(player1 == null){
                 player1 = conn;
                 success = true;
+                player1.send(new DataPacket(Type.MESSAGE, new JSONObject().put("message", "You have now started a single client game"), "").toJSON().toString());
             }
         }else{
             if(player1 == null){
                 player1 = conn;
                 success = true;
+                if(player2 != null) player2.send(new DataPacket(Type.MESSAGE, new JSONObject().put("message", "Player 1 have joined"), "").toJSON().toString());
             }
             if(player2 == null){
                 player2 = conn;
                 success = true;
+                if(player1 != null) player1.send(new DataPacket(Type.MESSAGE, new JSONObject().put("message", "Player 2 have joined"), "").toJSON().toString());
             }
         }
 
@@ -492,8 +503,14 @@ public class Lobby {
     }
 
     public boolean remove(WebSocket conn) {
-        if(player1 == conn) player1 = null;
-        if(player2 == conn) player2 = null;
+        if(player1 == conn){
+            player1 = null;
+            if(player2 != null) player2.send(new DataPacket(Type.MESSAGE, new JSONObject().put("message", "Player 1 have disconnected"), "").toJSON().toString());
+        }
+        if(player2 == conn){
+            player2 = null;
+            if(player1 != null) player1.send(new DataPacket(Type.MESSAGE, new JSONObject().put("message", "Player 2 have disconnected"), "").toJSON().toString());
+        }
         return player1 == null && player2 == null;
     }
 }

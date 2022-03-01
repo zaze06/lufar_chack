@@ -10,5 +10,8 @@ public enum Type {
     ERROR,
     CLICK,
     LINE,
-    CREATE_LOBBY, JOIN, NAME
+    CREATE_LOBBY,
+    JOIN,
+    MESSAGE,
+    NAME
 }
