@@ -8,6 +8,7 @@ from getting 5 in a row
 ## How do I play this with my friend?
 OPS if you need the old way check in commits list and check for old version or use the command line `-h` argument
 1. open your preferred browser from this list
+   - Note this issue is becus of i'm using ws so make sure to open the webpage whit http and not https
    - Safari(Mac os, IOS)
    - Microsoft Edge
    - FireFox
