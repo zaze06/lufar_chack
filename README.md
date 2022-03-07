@@ -5,6 +5,8 @@ Well it's a game where you play 3 in a row but its 5 in a row and on a non-stand
 ## How do I play it?
 So the game rules is that you place your marker (a blue square or a red circle) and try to get 5 in a row while blocking the other player
 from getting 5 in a row
+## Whats the pregress?
+Chack out [the to do list powerd by trello](https://trello.com/b/LbT5BrHh/lufar-chack) if you ar intrested in the pregress
 ## How do I play this with my friend?
 OPS if you need the old way check in commits list and check for old version or use the command line `-h` argument
 1. open your preferred browser from this list
